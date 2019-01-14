@@ -1,8 +1,12 @@
 import EventEmitter from 'events'
-import oz, {load, loadAll, loadCli} from './Organized'
+import oz, {load, loadAll, loadCli, generator, log} from './Organized'
+import minimist from 'minimist'
 
 const event = new EventEmitter()
 const dir = process.cwd()
+
+var argv = minimist(process.argv.slice(2));
+var {success, error} = log
 
 let beforeLoad = async function(file){
     
@@ -26,8 +30,26 @@ let afterLoad = async function(file){
 }
 
 let loadCliFunc = async function(dir){
-    await loadAll([dir + '/plugins/*/main.js'], async () => {
-        await loadCli([dir + '/plugins/*/main.js'])
+    
+    
+    loadAll([dir + '/plugins/*/main.js'], async () => {
+
+        
+        let cliFunc       = argv['_'].hasOwnProperty(0) ? argv['_'][0] : false
+        let generatorFunc = argv['_'].hasOwnProperty(1) ? argv['_'][1] : false
+    
+        if(cliFunc && cliFunc == 'new'){
+            if(generator.hasOwnProperty(generatorFunc)){
+                generator[generatorFunc](argv)
+            }else{
+                error('Não existe esse generator')
+            }
+                
+        }else{
+            loadCli([dir + '/plugins/*/main.js'])
+        }
+            
+        
     })
 }
 

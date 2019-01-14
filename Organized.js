@@ -1,11 +1,34 @@
 import glob from 'glob'
 import debug from 'debug'
+import colors from 'colors/safe'
+
 var Organized = {}
+
+let success = (text) => {
+    if(process.env.DEBUG == 'true')
+        console.log(colors.green(text))
+}
+
+let error = (text) => {
+    if(process.env.DEBUG == 'true')
+        console.log(colors.red(text))
+}
+
+export let log = {
+    success:success,
+    error:error
+}
 
 export default Organized
 
+export let generator = {}
+
 export function load(index, item) {
     Organized[index] = item
+}
+
+export function loadGenerator(index, item) {
+    generator[index] = item
 }
 
 export async function loadAll(folders,cb){
@@ -76,7 +99,7 @@ export async function loadAll(folders,cb){
 var argv = require('minimist')(process.argv.slice(2));
 
 export async function loadCli(folders,cb){
-    
+
     let listFiles = async (dir) => {
         return new Promise((acc, rej) => {
             glob(dir, async (er, file) => {
@@ -123,7 +146,7 @@ export async function loadCli(folders,cb){
                 
                 let plugin = orderOfPlugins[j]
                 let cliService = process.argv[2]
-
+                success(plugin)
                 if(listOfFiles[plugin].hasOwnProperty('cli') && plugin == cliService){
                     await listOfFiles[plugin].cli(argv)
                 }
