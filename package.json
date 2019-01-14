@@ -1,5 +1,5 @@
 {
-  "name": "vdp-cli",
+  "name": "vdp",
   "version": "0.1.0",
   "description": "",
   "main": "entry.js",
@@ -11,5 +11,8 @@
   "dependencies": {
     "debug": "^4.1.1",
     "esm": "^3.0.84"
+  },
+  "bin": {
+    "vdp-cli": "./cli-entry.js"
   }
 }

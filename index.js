@@ -1,9 +1,9 @@
 import Event from './SystemEvents'
 import Organized, {load} from './Organized'
 
-export default async (dir, file) =>{
+export default async (file) =>{
 
-    Event.emit('beforeLoad',dir,file)
+    Event.emit('beforeLoad',file)
 
 }
 
