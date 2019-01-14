@@ -49,7 +49,7 @@ export async function loadAll(folders,cb){
         
 
        if(files.length - 1 == i){
-
+            
            let orderOfPlugins = resolve(order)
 
            for(let j in orderOfPlugins){
@@ -150,15 +150,20 @@ function resolve(graph) {
       if (!Array.isArray(ancestors)) ancestors = [];
       ancestors.push(name);
       visited[name] = true;
-  
-      graph[name].forEach(function(dep) {
-          if (ancestors.indexOf(dep) >= 0)  // if already in ancestors, a closed chain exists.
-              throw new Error('Circular dependency "' +  dep + '" is required by "' + name + '": ' + ancestors.join(' -> '));
-  
-          // if already exists, do nothing
-          if (visited[dep]) return;
-          visit(dep, ancestors.slice(0)); // recursive call
-      });
+        if(graph[name]){
+            graph[name].forEach(function(dep) {
+                if (ancestors.indexOf(dep) >= 0)  // if already in ancestors, a closed chain exists.
+                    throw new Error('Circular dependency "' +  dep + '" is required by "' + name + '": ' + ancestors.join(' -> '));
+        
+                // if already exists, do nothing
+                if (visited[dep]) return;
+                visit(dep, ancestors.slice(0)); // recursive call
+            });
+        }else{
+            console.log(`ERROR: Não foi possível iniciar o serviço pois a dependência '${name}' não está instalada`)
+            process.exit(1)
+        }
+
   
       if(sorted.indexOf(name)<0) sorted.push(name);
     });
