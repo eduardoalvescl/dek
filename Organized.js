@@ -31,6 +31,32 @@ export function loadGenerator(index, item) {
     generator[index] = item
 }
 
+export function installPackages(packages){
+    var child_process = require('child_process');
+
+    (function install(modules, callback) {
+        if (modules.length == 0) {
+            if (callback) callback(null);
+            return;
+        }
+        var module = modules.shift();
+        child_process.exec(
+            'npm install ' + module,
+            {},
+            function(error, stdout, stderr) {
+                process.stdout.write(stdout + '\n');
+                process.stderr.write(stderr + '\n');
+                if (error !== null) {
+                    if (callback) callback(error);
+                }
+                else {
+                    install(modules, callback);
+                }
+            });
+    })(packages)
+
+}
+
 export async function loadAll(folders,cb){
     
     let listFiles = async (dir) => {
@@ -161,6 +187,59 @@ export async function loadCli(folders,cb){
             
         
     }
+   
+}
+
+export async function loadNpmDependencies(folders,cb){
+
+    let listFiles = async (dir) => {
+        return new Promise((acc, rej) => {
+            glob(dir, async (er, file) => {
+                acc(file)
+            })
+        })
+    }
+
+    let getFiles =  () => {
+        return new Promise(async (acc, rej) =>{
+            let filesList = []
+            for(let i in folders){
+                let dir = folders[i]
+                let files = await listFiles(dir)
+                
+                files.forEach(el => {
+                   filesList.push(el) 
+                });
+                
+                if(folders.length - 1 == i){
+                    acc(filesList)
+                }
+            }
+        })
+    }
+
+    let files = await getFiles()
+    
+    let dependencies = []
+
+    for(let i in files){
+
+        let file         = files[i]
+        const routerFile = require(file)
+        
+
+       if(routerFile){
+
+            routerFile.npm.forEach((pkg) => {
+                dependencies.push(pkg)
+            })
+            
+       }
+            
+        
+    }
+    
+    installPackages(dependencies)
    
 }
 

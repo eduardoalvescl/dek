@@ -1,5 +1,5 @@
 {
-  "name": "vdp",
+  "name": "vdp-cli",
   "version": "0.1.0",
   "description": "",
   "main": "entry.js",

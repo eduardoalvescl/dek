@@ -1,5 +1,5 @@
 import EventEmitter from 'events'
-import oz, {load, loadAll, loadCli, generator, log} from './Organized'
+import oz, {load, loadAll, loadCli, generator, log, installPackages, loadNpmDependencies} from './Organized'
 import minimist from 'minimist'
 
 const event = new EventEmitter()
@@ -31,26 +31,31 @@ let afterLoad = async function(file){
 
 let loadCliFunc = async function(dir){
     
-    
-    loadAll([dir + '/plugins/*/main.js'], async () => {
+    let cliFunc       = argv['_'].hasOwnProperty(0) ? argv['_'][0] : false
+    let generatorFunc = argv['_'].hasOwnProperty(1) ? argv['_'][1] : false
 
-        
-        let cliFunc       = argv['_'].hasOwnProperty(0) ? argv['_'][0] : false
-        let generatorFunc = argv['_'].hasOwnProperty(1) ? argv['_'][1] : false
+    if(cliFunc && cliFunc == 'install'){
+        console.log('Buscando dependências')
+        loadNpmDependencies([dir + '/plugins/*/npm.js'])
+    }else{
+        loadAll([dir + '/plugins/*/main.js'], async () => {
+
     
-        if(cliFunc && cliFunc == 'new'){
-            if(generator.hasOwnProperty(generatorFunc)){
-                generator[generatorFunc](argv)
+            if(cliFunc && cliFunc == 'new'){
+                if(generator.hasOwnProperty(generatorFunc)){
+                    generator[generatorFunc](argv)
+                }else{
+                    error('Não existe esse generator')
+                }
+                    
             }else{
-                error('Não existe esse generator')
+                loadCli([dir + '/plugins/*/main.js'])
             }
                 
-        }else{
-            loadCli([dir + '/plugins/*/main.js'])
-        }
             
-        
-    })
+        })
+    }
+
 }
 
 event.on('beforeLoad', beforeLoad)
