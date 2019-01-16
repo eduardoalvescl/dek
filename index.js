@@ -1,5 +1,8 @@
 import Event from './SystemEvents'
 import Organized, {load, loadGenerator, generator, log} from './Organized'
+import dotenv from 'dotenv'
+
+dotenv.config({ path: `${process.cwd()}/.env` })
 
 export default async (file) =>{
     Event.emit('beforeLoad',file)
