@@ -12,7 +12,8 @@
     "colors": "^1.3.3",
     "debug": "^4.1.1",
     "dotenv": "^6.2.0",
-    "esm": "^3.0.84"
+    "esm": "^3.0.84",
+    "git-clone": "^0.1.0"
   },
   "bin": {
     "dek": "./cli-entry.js"

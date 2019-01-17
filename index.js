@@ -9,10 +9,10 @@ export default async (file) =>{
 }
 
 export let o = Organized
-
 export let success = log.success
-
-export let error = log.error
+export let danger  = log.danger
+export let warning = log.warning
+export let info    = log.info
 
 export let add = (item, index) => {
     load(item, index)

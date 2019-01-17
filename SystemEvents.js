@@ -1,5 +1,5 @@
 import EventEmitter from 'events'
-import oz, {load, loadAll, loadCli, generator, log, installPackages, loadNpmDependencies} from './Organized'
+import {loadAll, loadCli, generator, log, installPackages, loadNpmDependencies, cloneRepositoryList} from './Organized'
 import minimist from 'minimist'
 
 const event = new EventEmitter()
@@ -33,10 +33,15 @@ let loadCliFunc = async function(dir){
     
     let cliFunc       = argv['_'].hasOwnProperty(0) ? argv['_'][0] : false
     let generatorFunc = argv['_'].hasOwnProperty(1) ? argv['_'][1] : false
-
+    
     if(cliFunc && cliFunc == 'install'){
-        console.log('Buscando dependências')
-        loadNpmDependencies([dir + '/plugins/*/npm.js'])
+        log.info('Instalando dependências')
+        let list = require(`${process.cwd()}/dependencies.json`)
+
+        cloneRepositoryList(list.plugins,() => {
+            loadNpmDependencies([dir + '/plugins/*/npm.js'])
+        })
+        
     }else{
         loadAll([dir + '/plugins/*/main.js'], async () => {
 

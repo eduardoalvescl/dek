@@ -1,37 +1,44 @@
 import glob from 'glob'
-import debug from 'debug'
 import colors from 'colors/safe'
+import minimist from 'minimist'
+import clone from 'git-clone'
+
+var argv = minimist(process.argv.slice(2))
 
 var Organized = {}
-
-let success = (text) => {
-    if(process.env.DEBUG == 'true')
-        console.log(colors.green(text))
-}
-
-let error = (text) => {
-    if(process.env.DEBUG == 'true')
-        console.log(colors.red(text))
-}
-
-export let log = {
-    success:success,
-    error:error
-}
 
 export default Organized
 
 export let generator = {}
 
-export function load(index, item) {
+export let log = {
+    success:(text) => {
+            console.log(colors.black.bgGreen('  '),colors.bold.green('-> '+text))
+            console.log('')
+    },
+    danger:(text) => {
+            console.log(colors.black.bgRed('  '), colors.bold.red('-> '+text))
+            console.log('')
+    },
+    warning:(text) => {
+            console.log(colors.black.bgYellow('  '),colors.bold.yellow('-> '+text))
+            console.log('')
+    },
+    info:(text) => {
+            console.log(colors.black.bgCyan('  '), colors.bold.cyan('-> '+text))
+            console.log('')
+    }
+}
+
+export let load = (index, item) => {
     Organized[index] = item
 }
 
-export function loadGenerator(index, item) {
+export let loadGenerator = (index, item) => {
     generator[index] = item
 }
 
-export function installPackages(packages){
+export let installPackages = (packages) => {
     var child_process = require('child_process');
 
     (function install(modules, callback) {
@@ -39,9 +46,10 @@ export function installPackages(packages){
             if (callback) callback(null);
             return;
         }
-        var module = modules.shift();
+        var moduleName = modules.join(" ");
+        
         child_process.exec(
-            'npm install ' + module,
+            'npm install ' + moduleName,
             {},
             function(error, stdout, stderr) {
                 process.stdout.write(stdout + '\n');
@@ -50,14 +58,14 @@ export function installPackages(packages){
                     if (callback) callback(error);
                 }
                 else {
-                    install(modules, callback);
+                    if(callback) callback();
                 }
             });
     })(packages)
 
 }
 
-export async function loadAll(folders,cb){
+export let loadAll = async (folders,cb) => {
     
     let listFiles = async (dir) => {
         return new Promise((acc, rej) => {
@@ -88,43 +96,45 @@ export async function loadAll(folders,cb){
     let files = await getFiles()
     let order = {}
     let listOfFiles = {}
+    if(files.length > 0){
+        for(let i in files){
 
-    for(let i in files){
-
-        let file         = files[i]
-        const routerFile = require(file)
-        order[routerFile.name] = routerFile.dependencies
-        listOfFiles[routerFile.name] = routerFile
-        
-
-       if(files.length - 1 == i){
+            let file         = files[i]
+            const routerFile = require(file)
+            order[routerFile.name] = routerFile.dependencies
+            listOfFiles[routerFile.name] = routerFile
             
-           let orderOfPlugins = resolve(order)
-
-           for(let j in orderOfPlugins){
+    
+           if(files.length - 1 == i){
                 
-                let plugin = orderOfPlugins[j]
-                if(typeof routerFile == 'object' && routerFile.hasOwnProperty('default'))
-                    await listOfFiles[plugin].default(Organized)
-                else if(typeof routerFile == 'function')
-                    await listOfFiles[plugin](Organized)
-
-                if(orderOfPlugins.length - 1 == j){
-                    if(cb) cb()
-                }
-
+               let orderOfPlugins = resolve(order)
+    
+               for(let j in orderOfPlugins){
+                    
+                    let plugin = orderOfPlugins[j]
+                    if(typeof routerFile == 'object' && routerFile.hasOwnProperty('default'))
+                        await listOfFiles[plugin].default(Organized)
+                    else if(typeof routerFile == 'function')
+                        await listOfFiles[plugin](Organized)
+    
+                    if(orderOfPlugins.length - 1 == j){
+                        if(cb) cb()
+                    }
+    
+               }
+                
            }
+                
             
-       }
-            
-        
+        }
+    }else{
+        if(cb) cb()
     }
+ 
    
 }
 
-var argv = require('minimist')(process.argv.slice(2));
-
-export async function loadCli(folders,cb){
+export let loadCli = async (folders,cb) => {
 
     let listFiles = async (dir) => {
         return new Promise((acc, rej) => {
@@ -172,7 +182,7 @@ export async function loadCli(folders,cb){
                 
                 let plugin = orderOfPlugins[j]
                 let cliService = process.argv[2]
-                success(plugin)
+                log.success(plugin)
                 if(listOfFiles[plugin].hasOwnProperty('cli') && plugin == cliService){
                     await listOfFiles[plugin].cli(argv)
                 }
@@ -190,7 +200,7 @@ export async function loadCli(folders,cb){
    
 }
 
-export async function loadNpmDependencies(folders,cb){
+export let loadNpmDependencies = async (folders,cb) => {
 
     let listFiles = async (dir) => {
         return new Promise((acc, rej) => {
@@ -243,7 +253,24 @@ export async function loadNpmDependencies(folders,cb){
    
 }
 
-function resolve(graph) {
+export let cloneRepositoryList = async (list,cb) => {
+    let getRepositoryName = (name) => name.replace('https://github.com/','').split("/")
+    let repository        = list.shift()
+    let repositoryName    = getRepositoryName(repository)[1]
+    
+    clone(repository, `${process.cwd()}/plugins/${repositoryName}`, (err) => {
+        if(err)
+            log.warning(`Repositório ${repositoryName} já foi instalado anteriormente!`)
+        else
+            log.warning(`Repositório ${repositoryName} instalado com sucesso!`)    
+        
+        if(list.length > 0) 
+            cloneRepositoryList(list, cb)
+        else
+            if(cb) cb()
+    })
+}
+let resolve = (graph) => {
     var sorted  = [], // sorted list of IDs ( returned value )
         visited = {}; // hash: id of already visited node => true
   
