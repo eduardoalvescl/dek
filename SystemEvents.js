@@ -1,5 +1,5 @@
 import EventEmitter from 'events'
-import {loadAll, loadCli, generator, log, installPackages, loadNpmDependencies, cloneRepositoryList} from './Organized'
+import {loadAll, loadCli, generator, log, installPackages, loadNpmDependencies, cloneRepositoryList, cloneSkeleton} from './Organized'
 import minimist from 'minimist'
 
 const event = new EventEmitter()
@@ -42,6 +42,11 @@ let loadCliFunc = async function(dir){
             loadNpmDependencies([dir + '/plugins/*/npm.js'])
         })
         
+    }else if(cliFunc && cliFunc == 'init'){
+        if(generatorFunc)
+            cloneSkeleton(generatorFunc)
+        else
+            cloneSkeleton()
     }else{
         loadAll([dir + '/plugins/*/main.js'], async () => {
 

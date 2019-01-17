@@ -270,6 +270,28 @@ export let cloneRepositoryList = async (list,cb) => {
             if(cb) cb()
     })
 }
+
+export let cloneSkeleton = (name = null) => {
+    
+    let folder
+
+    if(name)
+        folder = `${process.cwd()}/${name}`
+    else
+        folder = `${process.cwd()}/dek-skeleton`
+
+    clone('https://github.com/vigiadepreco/dek-skeleton', folder, (err) => {
+
+        if(err){
+            log.warning(`Não foi possível iniciar a aplicação DEK`)
+            console.log(err)
+        }else{
+            log.warning(`Aplicação DEK iniciada com sucesso`)    
+        }
+            
+    })
+}
+
 let resolve = (graph) => {
     var sorted  = [], // sorted list of IDs ( returned value )
         visited = {}; // hash: id of already visited node => true
