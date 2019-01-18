@@ -1,4 +1,4 @@
-import Event from './SystemEvents'
-import dotenv from 'dotenv'
+import Event from './SystemEvents';
+import dotenv from 'dotenv';
 
-Event.emit('loadCli',process.cwd())
+Event.emit('loadCli', process.cwd());
