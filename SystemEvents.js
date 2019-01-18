@@ -1,6 +1,5 @@
 import EventEmitter from 'events'
 import Organized, {loadAll, loadCli, generator, log, loadNpmDependencies, cloneRepositoryList, cloneSkeleton} from './Organized'
-import {o} from 'dek'
 import minimist from 'minimist'
 
 const event = new EventEmitter()
