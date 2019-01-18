@@ -1,12 +1,13 @@
 import EventEmitter from 'events'
-import {loadAll, loadCli, generator, log, installPackages, loadNpmDependencies, cloneRepositoryList, cloneSkeleton} from './Organized'
+import Organized, {loadAll, loadCli, generator, log, loadNpmDependencies, cloneRepositoryList, cloneSkeleton} from './Organized'
+import {o} from 'dek'
 import minimist from 'minimist'
 
 const event = new EventEmitter()
 const dir = process.cwd()
 
 var argv = minimist(process.argv.slice(2));
-var {success, error} = log
+var {success, danger} = log
 
 let beforeLoad = async function(file){
     
@@ -48,18 +49,22 @@ let loadCliFunc = async function(dir){
         else
             cloneSkeleton()
     }else{
-        loadAll([dir + '/plugins/*/main.js'], async () => {
-
-    
+        
+        loadAll([dir + '/plugins/*/main.js'], async (listOfFunctions) => {
+            
             if(cliFunc && cliFunc == 'new'){
-                if(generator.hasOwnProperty(generatorFunc)){
-                    generator[generatorFunc](argv)
+                if(listOfFunctions['generator'].hasOwnProperty(generatorFunc)){
+                    await listOfFunctions['generator'][generatorFunc](argv)
                 }else{
-                    error('Não existe esse generator')
+                    console.log('')
+                    danger(`Generator ${generatorFunc} não existe`)
                 }
                     
+            }else if(cliFunc && listOfFunctions['cli'].hasOwnProperty(cliFunc)){
+                await listOfFunctions['cli'][cliFunc](argv)
             }else{
-                loadCli([dir + '/plugins/*/main.js'])
+                console.log('')
+                danger(`CLI ${cliFunc} não existe`)
             }
                 
             

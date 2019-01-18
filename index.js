@@ -5,7 +5,7 @@ import dotenv from 'dotenv'
 dotenv.config({ path: `${process.cwd()}/.env` })
 
 export default async (file) =>{
-    Event.emit('beforeLoad',file)
+    Event.emit('beforeLoad',file, Organized)
 }
 
 export let o = Organized

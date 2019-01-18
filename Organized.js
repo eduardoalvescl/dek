@@ -108,17 +108,30 @@ export let loadAll = async (folders,cb) => {
            if(files.length - 1 == i){
                 
                let orderOfPlugins = resolve(order)
-    
+               let listOfFunctions = {
+                   cli:{},
+                   generator:{}
+               }
                for(let j in orderOfPlugins){
                     
                     let plugin = orderOfPlugins[j]
-                    if(typeof routerFile == 'object' && routerFile.hasOwnProperty('default'))
+                    if(typeof listOfFiles[plugin] == 'object' && listOfFiles[plugin].hasOwnProperty('default'))
                         await listOfFiles[plugin].default(Organized)
-                    else if(typeof routerFile == 'function')
+                    else if(typeof listOfFiles[plugin] == 'function')
                         await listOfFiles[plugin](Organized)
+                        
+                    if((typeof listOfFiles[plugin] == 'object' || typeof listOfFiles[plugin] == 'function') && listOfFiles[plugin].hasOwnProperty('generator')){
+                        let generatorName = listOfFiles[plugin].generator.name
+                        listOfFunctions['generator'][generatorName] = listOfFiles[plugin].generator.action
+                    }
+
+                    if((typeof listOfFiles[plugin] == 'object' || typeof listOfFiles[plugin] == 'function') && listOfFiles[plugin].hasOwnProperty('cli')){
+                        let generatorName = listOfFiles[plugin].cli.name
+                        listOfFunctions['cli'][generatorName] = listOfFiles[plugin].cli.action
+                    }
     
                     if(orderOfPlugins.length - 1 == j){
-                        if(cb) cb()
+                        if(cb) cb(listOfFunctions)
                     }
     
                }
@@ -199,6 +212,7 @@ export let loadCli = async (folders,cb) => {
     }
    
 }
+
 
 export let loadNpmDependencies = async (folders,cb) => {
 
