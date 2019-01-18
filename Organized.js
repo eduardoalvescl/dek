@@ -311,7 +311,7 @@ export let cloneSkeleton = (name = null) => {
     else
         folder = `${process.cwd()}/dek-skeleton`;
 
-    clone('https://github.com/vigiadepreco/dek-skeleton', folder, {checkout: 'v0.6.0'},(err) => {
+    clone('https://github.com/vigiadepreco/dek-skeleton', folder, {checkout: 'master'},(err) => {
         if(err){
             log.warning(`Não foi possível iniciar a aplicação DEK`);
             console.log(err);
