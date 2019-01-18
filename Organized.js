@@ -2,6 +2,7 @@ import glob from 'glob'
 import colors from 'colors/safe'
 import minimist from 'minimist'
 import clone from 'git-clone'
+import fs from 'fs'
 
 var argv = minimist(process.argv.slice(2));
 var Organized = {};
@@ -236,16 +237,64 @@ export let loadNpmDependencies = async (folders,cb) => {
     installPackages(dependencies);
 }
 
-export let cloneRepositoryList = async (list, cb) => {
-    let getRepositoryName = (name) => name.replace('https://github.com/','').split("/");
-    let repository        = list.shift();
-    let repositoryName    = getRepositoryName(repository)[1];
+var rmdirAsync = function(path, callback) {
+	fs.readdir(path, function(err, files) {
+		if(err) {
+			// Pass the error on to callback
+			callback(err, []);
+			return;
+		}
+		var wait = files.length,
+			count = 0,
+			folderDone = function(err) {
+			count++;
+			// If we cleaned out all the files, continue
+			if( count >= wait || err) {
+				fs.rmdir(path,callback);
+			}
+		};
+		// Empty directory to bail early
+		if(!wait) {
+			folderDone();
+			return;
+		}
+		
+		// Remove one or more trailing slash to keep from doubling up
+		path = path.replace(/\/+$/,"");
+		files.forEach(function(file) {
+			var curPath = path + "/" + file;
+			fs.lstat(curPath, function(err, stats) {
+				if( err ) {
+					callback(err, []);
+					return;
+				}
+				if( stats.isDirectory() ) {
+					rmdirAsync(curPath, folderDone);
+				} else {
+					fs.unlink(curPath, folderDone);
+				}
+			});
+		});
+	});
+};
 
-    clone(repository, `${process.cwd()}/plugins/${repositoryName}`, (err) => {
-        if(err)
-            log.warning(`Repositório ${repositoryName} já foi instalado anteriormente!`)
-        else
-            log.warning(`Repositório ${repositoryName} instalado com sucesso!`)
+export let cloneRepositoryList = async (list, cb) => {
+
+    let getRepositoryName = (name) => name.split("/");
+    let repository        = list.shift();
+    let repositoryName    = getRepositoryName(repository[0])[1];
+    let repositoryUrl     = repository[0]
+    let repositoryVersion = repository[1]
+
+    
+    clone(`https://github.com/${repositoryUrl}`, `${process.cwd()}/plugins/${repositoryName}`, {checkout: repositoryVersion}, (err) => {
+        if(err){
+            log.warning(`Repositório ${repositoryUrl} já foi instalado anteriormente!`);
+        }
+        else{
+            rmdirAsync(`${process.cwd()}/plugins/${repositoryName}/.git`, () =>{}); 
+            log.success(`Repositório ${repositoryName} instalado com sucesso!`);
+        }
 
         if(list.length > 0)
             cloneRepositoryList(list, cb);
@@ -262,12 +311,13 @@ export let cloneSkeleton = (name = null) => {
     else
         folder = `${process.cwd()}/dek-skeleton`;
 
-    clone('https://github.com/vigiadepreco/dek-skeleton', folder, (err) => {
+    clone('https://github.com/vigiadepreco/dek-skeleton', folder, {checkout: 'v0.6.0'},(err) => {
         if(err){
             log.warning(`Não foi possível iniciar a aplicação DEK`);
             console.log(err);
         }
         else{
+            rmdirAsync(`${folder}/.git`, () =>{}); 
             log.warning(`Aplicação DEK iniciada com sucesso`)
         }
     })
