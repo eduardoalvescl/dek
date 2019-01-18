@@ -1,6 +1,6 @@
 {
     "name": "dek",
-    "version": "0.4.2",
+    "version": "0.4.3",
     "description": "",
     "main": "entry.js",
     "author": "Eduardo Lima <eduardo@vigiadepreco.com.br>",
@@ -8,7 +8,19 @@
         "Andre Ferreira <andre@vigiadepreco.com.br>"
     ],
     "author": "",
-    "license": "ISC",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/vigiadepreco/dek"
+    },
+    "bugs": {
+        "url": "https://github.com/vigiadepreco/dek/issues"
+    },
+    "homepage": "https://github.com/vigiadepreco/dek",
+    "keywords": [
+        "dek",
+        "cli"
+    ],
     "dependencies": {
         "colors": "^1.3.3",
         "debug": "^4.1.1",
