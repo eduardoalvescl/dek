@@ -36,9 +36,9 @@ let loadCliFunc = async function(dir){
     
     if(cliFunc && cliFunc == 'install'){
         log.info('Instalando dependências')
-        let list = require(`${process.cwd()}/dependencies.json`)
-
-        cloneRepositoryList(list.plugins,() => {
+        let list = require(`${process.cwd()}/package.json`)
+        
+        cloneRepositoryList(list.dekDependencies,() => {
             loadNpmDependencies([dir + '/plugins/*/npm.js'])
         })
         
